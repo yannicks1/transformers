@@ -23,8 +23,6 @@ from transformers import (
     AddedToken,
     LayoutXLMTokenizerFast,
     SpecialTokensMixin,
-    is_tf_available,
-    is_torch_available,
     logging,
 )
 from transformers.models.layoutxlm.tokenization_layoutxlm import LayoutXLMTokenizer
@@ -1615,12 +1613,7 @@ class LayoutXLMTokenizationTest(TokenizerTesterMixin, unittest.TestCase):
             tokenizer = self.rust_tokenizer_class.from_pretrained(pretrained_name, **kwargs)
 
             with self.subTest(f"{tokenizer.__class__.__name__} ({pretrained_name}, {tokenizer.__class__.__name__})"):
-                if is_torch_available():
-                    returned_tensor = "pt"
-                elif is_tf_available():
-                    returned_tensor = "tf"
-                else:
-                    returned_tensor = "jax"
+                returned_tensor = "pt"
 
                 # Single example
                 words, boxes = self.get_words_and_boxes()

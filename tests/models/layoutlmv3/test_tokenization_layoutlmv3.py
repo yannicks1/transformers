@@ -26,8 +26,6 @@ from transformers import (
     AddedToken,
     LayoutLMv3TokenizerFast,
     SpecialTokensMixin,
-    is_tf_available,
-    is_torch_available,
     logging,
 )
 from transformers.models.layoutlmv3.tokenization_layoutlmv3 import VOCAB_FILES_NAMES, LayoutLMv3Tokenizer
@@ -1571,12 +1569,7 @@ class LayoutLMv3TokenizationTest(TokenizerTesterMixin, unittest.TestCase):
             tokenizer = self.rust_tokenizer_class.from_pretrained(pretrained_name, **kwargs)
 
             with self.subTest(f"{tokenizer.__class__.__name__} ({pretrained_name}, {tokenizer.__class__.__name__})"):
-                if is_torch_available():
-                    returned_tensor = "pt"
-                elif is_tf_available():
-                    returned_tensor = "tf"
-                else:
-                    returned_tensor = "jax"
+                returned_tensor = "pt"
 
                 # Single example
                 words = ["HuggingFace", "is", "solving", "NLP", "one", "commit", "at", "a", "time"]

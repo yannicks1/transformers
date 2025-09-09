@@ -26,8 +26,6 @@ from transformers import (
     AddedToken,
     MarkupLMTokenizerFast,
     SpecialTokensMixin,
-    is_tf_available,
-    is_torch_available,
     logging,
 )
 from transformers.models.markuplm.tokenization_markuplm import VOCAB_FILES_NAMES, MarkupLMTokenizer
@@ -1461,12 +1459,7 @@ class MarkupLMTokenizationTest(TokenizerTesterMixin, unittest.TestCase):
             tokenizer = self.rust_tokenizer_class.from_pretrained(pretrained_name, **kwargs)
 
             with self.subTest(f"{tokenizer.__class__.__name__} ({pretrained_name}, {tokenizer.__class__.__name__})"):
-                if is_torch_available():
-                    returned_tensor = "pt"
-                elif is_tf_available():
-                    returned_tensor = "tf"
-                else:
-                    returned_tensor = "jax"
+                returned_tensor = "pt"
 
                 # Single example
                 nodes, xpaths = self.get_nodes_and_xpaths()
