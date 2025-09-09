@@ -89,7 +89,6 @@ from .utils import (
     is_fbgemm_gpu_available,
     is_flash_attn_2_available,
     is_flash_attn_3_available,
-    is_flax_available,
     is_flute_available,
     is_fp_quant_available,
     is_fsdp_available,
@@ -105,7 +104,6 @@ from .utils import (
     is_ipex_available,
     is_jinja_available,
     is_jumanpp_available,
-    is_keras_nlp_available,
     is_kernels_available,
     is_levenshtein_available,
     is_librosa_available,
@@ -141,10 +139,6 @@ from .utils import (
     is_spqr_available,
     is_sudachi_available,
     is_sudachi_projection_available,
-    is_tensorflow_probability_available,
-    is_tensorflow_text_available,
-    is_tf2onnx_available,
-    is_tf_available,
     is_tiktoken_available,
     is_timm_available,
     is_tokenizers_available,
@@ -514,14 +508,6 @@ def require_jinja(test_case):
     return unittest.skipUnless(is_jinja_available(), "test requires jinja")(test_case)
 
 
-def require_tf2onnx(test_case):
-    logger.warning_once(
-        "TensorFlow test-related code, including `require_tf2onnx`, is deprecated and will be removed in "
-        "Transformers v4.55"
-    )
-    return unittest.skipUnless(is_tf2onnx_available(), "test requires tf2onnx")(test_case)
-
-
 def require_onnx(test_case):
     return unittest.skipUnless(is_onnx_available(), "test requires ONNX")(test_case)
 
@@ -689,18 +675,6 @@ def require_torchcodec(test_case):
     return unittest.skipUnless(is_torchcodec_available(), "test requires Torchcodec")(test_case)
 
 
-def require_torch_or_tf(test_case):
-    """
-    Decorator marking a test that requires PyTorch or TensorFlow.
-
-    These tests are skipped when neither PyTorch not TensorFlow is installed.
-
-    """
-    return unittest.skipUnless(is_torch_available() or is_tf_available(), "test requires PyTorch or TensorFlow")(
-        test_case
-    )
-
-
 def require_intel_extension_for_pytorch(test_case):
     """
     Decorator marking a test that requires Intel Extension for PyTorch.
@@ -716,47 +690,11 @@ def require_intel_extension_for_pytorch(test_case):
     )(test_case)
 
 
-def require_tensorflow_probability(test_case):
-    """
-    Decorator marking a test that requires TensorFlow probability.
-
-    These tests are skipped when TensorFlow probability isn't installed.
-
-    """
-    logger.warning_once(
-        "TensorFlow test-related code, including `require_tensorflow_probability`, is deprecated and will be "
-        "removed in Transformers v4.55"
-    )
-    return unittest.skipUnless(is_tensorflow_probability_available(), "test requires TensorFlow probability")(
-        test_case
-    )
-
-
 def require_torchaudio(test_case):
     """
     Decorator marking a test that requires torchaudio. These tests are skipped when torchaudio isn't installed.
     """
     return unittest.skipUnless(is_torchaudio_available(), "test requires torchaudio")(test_case)
-
-
-def require_tf(test_case):
-    """
-    Decorator marking a test that requires TensorFlow. These tests are skipped when TensorFlow isn't installed.
-    """
-    logger.warning_once(
-        "TensorFlow test-related code, including `require_tf`, is deprecated and will be removed in Transformers v4.55"
-    )
-    return unittest.skipUnless(is_tf_available(), "test requires TensorFlow")(test_case)
-
-
-def require_flax(test_case):
-    """
-    Decorator marking a test that requires JAX & Flax. These tests are skipped when one / both are not installed
-    """
-    logger.warning_once(
-        "JAX test-related code, including `require_flax`, is deprecated and will be removed in Transformers v4.55"
-    )
-    return unittest.skipUnless(is_flax_available(), "test requires JAX & Flax")(test_case)
 
 
 def require_sentencepiece(test_case):
@@ -792,25 +730,6 @@ def require_tokenizers(test_case):
     Decorator marking a test that requires 🤗 Tokenizers. These tests are skipped when 🤗 Tokenizers isn't installed.
     """
     return unittest.skipUnless(is_tokenizers_available(), "test requires tokenizers")(test_case)
-
-
-def require_tensorflow_text(test_case):
-    """
-    Decorator marking a test that requires tensorflow_text. These tests are skipped when tensroflow_text isn't
-    installed.
-    """
-    logger.warning_once(
-        "TensorFlow test-related code, including `require_tensorflow_text`, is deprecated and will be "
-        "removed in Transformers v4.55"
-    )
-    return unittest.skipUnless(is_tensorflow_text_available(), "test requires tensorflow_text")(test_case)
-
-
-def require_keras_nlp(test_case):
-    """
-    Decorator marking a test that requires keras_nlp. These tests are skipped when keras_nlp isn't installed.
-    """
-    return unittest.skipUnless(is_keras_nlp_available(), "test requires keras_nlp")(test_case)
 
 
 def require_pandas(test_case):
@@ -1079,16 +998,6 @@ if is_torch_available():
         torch_device = "cpu"
 else:
     torch_device = None
-
-if is_tf_available():
-    import tensorflow as tf
-
-if is_flax_available():
-    import jax
-
-    jax_device = jax.default_backend()
-else:
-    jax_device = None
 
 
 def require_torchdynamo(test_case):
@@ -1602,20 +1511,12 @@ def require_mistral_common(test_case):
 
 def get_gpu_count():
     """
-    Return the number of available gpus (regardless of whether torch, tf or jax is used)
+    Return the number of available gpus
     """
     if is_torch_available():
         import torch
 
         return torch.cuda.device_count()
-    elif is_tf_available():
-        import tensorflow as tf
-
-        return len(tf.config.list_physical_devices("GPU"))
-    elif is_flax_available():
-        import jax
-
-        return jax.device_count()
     else:
         return 0
 
@@ -2632,8 +2533,6 @@ def nested_simplify(obj, decimals=3):
         return obj
     elif is_torch_available() and isinstance(obj, torch.Tensor):
         return nested_simplify(obj.tolist(), decimals)
-    elif is_tf_available() and tf.is_tensor(obj):
-        return nested_simplify(obj.numpy().tolist())
     elif isinstance(obj, float):
         return round(obj, decimals)
     elif isinstance(obj, (np.int32, np.float32, np.float16)):
